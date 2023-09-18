@@ -2,7 +2,8 @@
 <html lang="en"> 
 <head> 
     <meta charset="UTF-8" />
-    <title>Making your first Phaser 3 Game - My version</title>
+    <title>Phaser.io Tutorial</title>
+    <meta name="description" content="Phaser3 tutorial + responsiveness, touch controls, alt keyboard controls" />
     <script src="//cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
     <style type="text/css">
         body {
@@ -19,11 +20,11 @@
 
 var config = {
     type: Phaser.AUTO,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: 800,
+    height: 600,
     scale: {
         mode: Phaser.Scale.FIT,
-        width: 800,
-        height: 600
+        autoCenter: Phaser.Scale.CENTER_BOTH
     },
     physics: {
         default: 'arcade',
@@ -49,6 +50,8 @@ var score = 0;
 var gameOver = false;
 var scoreText;
 var game;
+
+var dir, jump, dirPointer, jumpPointer;
 
 game = new Phaser.Game(config);
 
@@ -135,6 +138,7 @@ function create ()
     //  Input Events
     cursors = this.input.keyboard.createCursorKeys();
     wasd = this.input.keyboard.addKeys('W,S,A,D');
+    this.input.addPointer(1); //for multi-touch
 }
 
 function update ()
@@ -143,11 +147,35 @@ function update ()
         return;
     }
 
-    if (cursors.left.isDown || wasd.A.isDown) {
+    var ut = this.input.activePointer.upTime;
+    var dt = this.input.activePointer.downTime;
+
+    dirPointer = this.input.pointer1;
+    jumpPointer = this.input.pointer2;
+
+    if(jumpPointer.isDown) {
+        jump = true;
+    } else {
+        jump = false;
+    }
+
+    if(dirPointer.isDown) {
+        let x = dirPointer.position.x;
+        let y = dirPointer.position.y;
+        if(x > 400) {
+            dir = 'right';
+        } else {            
+            dir = 'left';
+        }
+    } else {
+        dir = false;
+    }
+
+    if (dir === 'left' || cursors.left.isDown || wasd.A.isDown) {
         player.setVelocityX(-160);
         player.anims.play('left', true);
     }
-    else if (cursors.right.isDown || wasd.D.isDown) {
+    else if (dir === 'right' || cursors.right.isDown || wasd.D.isDown) {
         player.setVelocityX(160);
         player.anims.play('right', true);
     }
@@ -156,7 +184,7 @@ function update ()
         player.anims.play('turn');
     }
 
-    if ((cursors.up.isDown || wasd.W.isDown) && player.body.touching.down){
+    if ((jump === true || cursors.up.isDown || wasd.W.isDown) && player.body.touching.down){
         player.setVelocityY(-330);
     }
 }
