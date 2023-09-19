@@ -157,17 +157,21 @@ function create ()
 function update ()
 {
     if (gameOver) {
+        const button = this.add.text(350, 300, 'retry', {
+            color:'yellow', fontSize:'xx-large', backgroundColor:'black',
+            fixedWidth: 100, fixedHeight: 35
+        }).setInteractive();
+        button.on('pointerup', function () {
+            this.scene.restart();
+            gameOver = false;
+        }, this);
         return;
     }
 
     dirPointer = this.input.pointer1;
     jumpPointer = this.input.pointer2;
 
-    if(jumpPointer.isDown) {
-        jump = true;
-    } else {
-        jump = false;
-    }
+    jump = jumpPointer.isDown ? true : false;
 
     if(dirPointer.isDown) {
         let x = dirPointer.position.x;
@@ -179,7 +183,8 @@ function update ()
         }
     } else {
         dir = false;
-        if(dirPointer.getDuration() > 0 && dirPointer.getDuration() < 200) {
+        if(dirPointer.getDuration() > 0 && dirPointer.getDuration() < 150) {
+            //if dirPointer isn't down and screen is tapped, jump
             jump = true;
         }
     }
@@ -210,13 +215,11 @@ function collectStar (player, star)
     score += 10;
     scoreText.setText('Score: ' + score);
 
-    if (stars.countActive(true) === 0)
+    if (!gameOver && stars.countActive(true) === 0)
     {
         //  A new batch of stars to collect
         stars.children.iterate(function (child) {
-
             child.enableBody(true, child.x, 0, true, true);
-
         });
 
         var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
@@ -233,11 +236,8 @@ function collectStar (player, star)
 function hitBomb (player, bomb)
 {
     this.physics.pause();
-
     player.setTint(0xff0000);
-
     player.anims.play('turn');
-
     gameOver = true;
 }
 
